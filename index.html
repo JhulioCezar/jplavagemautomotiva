@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07121f">
+  <meta name="description" content="Orçamentos e recibos da JP Lavagem Automotiva.">
+  <title>JP Lavagem Automotiva | Orçamentos e recibos</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <nav class="toolbar" aria-label="Ações do documento">
+      <div class="type-switch" role="group" aria-label="Tipo de documento">
+        <button type="button" class="doc-tab active" data-type="recibo">Recibo</button>
+        <button type="button" class="doc-tab" data-type="orcamento">Orçamento</button>
+      </div>
+      <button class="button light" id="newDoc" type="button">＋ Novo</button>
+    </nav>
+
+    <form id="docForm" autocomplete="on">
+      <article class="document-sheet">
+        <img class="flyer-header" src="panfleto-header.jpg" alt="JP Lavagem Automotiva — Lavagem com qualidade e confiança">
+        <section class="receipt-body">
+          <div class="document-title-row">
+            <h1 id="documentTitle">Recibo <span>de lavagem</span></h1>
+            <label class="number-field">Nº<input id="number" readonly aria-label="Número do documento"></label>
+            <label class="date-field">Data<input id="date" type="date" required aria-label="Data do documento"></label>
+          </div>
+
+          <section class="data-card">
+            <h2>Dados do cliente</h2>
+            <label class="full">Nome<input id="client" placeholder="Nome do cliente" autocomplete="name"></label>
+            <div class="two-cols">
+              <label>Telefone<input id="phone" inputmode="tel" placeholder="(68) 99999-9999" maxlength="15" autocomplete="tel"></label>
+              <label>CPF/CNPJ<input id="document" inputmode="numeric" placeholder="000.000.000-00 ou 00.000.000/0000-00" maxlength="18"></label>
+            </div>
+          </section>
+
+          <section class="data-card">
+            <h2>Dados do veículo</h2>
+            <div class="two-cols vehicle-first">
+              <label>Marca / modelo<input id="vehicle" placeholder="Ex.: Chevrolet Onix"></label>
+              <label>Placa<input id="plate" placeholder="ABC1D23 ou ABC1234" maxlength="7" autocapitalize="characters"></label>
+            </div>
+            <div class="two-cols">
+              <label>Cor<input id="color" placeholder="Cor do veículo"></label>
+              <label>Ano<input id="year" inputmode="numeric" placeholder="2022" maxlength="4"></label>
+            </div>
+          </section>
+
+          <div class="work-grid">
+            <section class="work-card service-card">
+              <h2><span class="round-icon">🚘</span> Serviços realizados</h2>
+              <div id="services" class="services"></div>
+            </section>
+            <section class="work-card payment-card">
+              <h2><span class="round-icon">▤</span> Forma de pagamento</h2>
+              <div class="payment-options" id="paymentChoices">
+                <label><input type="radio" name="payChoice" value="Pix"><span>Pix</span><b class="pix-mark">◆ pix</b></label>
+                <label><input type="radio" name="payChoice" value="Dinheiro"><span>Dinheiro</span></label>
+                <label><input type="radio" name="payChoice" value="Cartão de Crédito"><span>Cartão de Crédito/Débito</span><b class="card-mark">VISA　●●　elo　)))</b></label>
+              </div>
+              <input id="payment" type="hidden" value="Pix">
+              <div class="totals">
+                <div><span>Valor dos serviços</span><b id="subtotal">R$ 0,00</b></div>
+                <label>Desconto<div class="currency-input"><span>R$</span><input id="discount" inputmode="numeric" placeholder="0,00" autocomplete="off"></div></label>
+                <strong><span id="totalLabel">Total pago</span><b id="total">R$ 0,00</b></strong>
+              </div>
+            </section>
+          </div>
+
+          <label class="observations">Observações<textarea id="notes" rows="3" placeholder="Informações adicionais"></textarea></label>
+
+          <div class="signatures"><div>✎ <span>Assinatura do cliente</span></div><div>♟ <span>Assinatura do responsável</span></div></div>
+        </section>
+        <img class="flyer-footer" src="panfleto-footer.jpg" alt="Atendemos em Calafate · Fale conosco (68) 99921-4250 · Obrigado pela preferência">
+      </article>
+      <div class="actions"><button class="button primary" type="button" id="preview">Visualizar e imprimir</button><button class="button secondary" type="button" id="save">Salvar no histórico</button></div>
+    </form>
+
+    <aside class="history">
+      <div class="history-title"><div><p class="eyebrow">NESTE APARELHO</p><h2>Histórico</h2></div><button id="clearHistory" class="text-button" type="button">Limpar</button></div>
+      <div id="historyList" class="history-list"></div>
+      <p class="privacy-note">Seus documentos ficam salvos somente neste navegador.</p>
+    </aside>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
