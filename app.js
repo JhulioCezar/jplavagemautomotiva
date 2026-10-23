@@ -21,7 +21,12 @@ const historyItems = () => JSON.parse(localStorage.getItem('jp-documents') || '[
 
 function nextNumber() {
   const year = String(new Date().getFullYear());
-  const sequence = Number(localStorage.getItem(`jp-next-number-${year}`) || 1);
+  const savedSequence = Number(localStorage.getItem(`jp-next-number-${year}`) || 1);
+  const highestSaved = historyItems().reduce((highest, item) => {
+    if (!item.number?.startsWith(`${year}/`)) return highest;
+    return Math.max(highest, Number(item.number.split('/')[1]) || 0);
+  }, 0) + 1;
+  const sequence = Math.max(savedSequence, highestSaved);
   return `${year}/${String(sequence).padStart(6, '0')}`;
 }
 
@@ -212,8 +217,10 @@ function requireClient() {
 function saveDocument() {
   if (!requireClient()) return;
   const documentData = readDocument();
-  if (!documentData.number.includes('/')) documentData.number = nextNumber();
   const saved = historyItems();
+  if (!documentData.number.includes('/') || saved.some((item) => item.number === documentData.number)) {
+    documentData.number = nextNumber();
+  }
   saved.unshift(documentData);
   localStorage.setItem('jp-documents', JSON.stringify(saved.slice(0, 100)));
   const [year, sequence] = documentData.number.split('/');
@@ -256,6 +263,51 @@ $('#notes').addEventListener('blur', (event) => { event.target.value = sentenceC
 $('#docForm').addEventListener('submit', (event) => event.preventDefault());
 fillForm();
 renderHistory();
+
+const installButton = $('#installPwa');
+let deferredInstallPrompt = null;
+let installedThisSession = false;
+const isAppleMobile = () => /iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isMobileDevice = () => navigator.userAgentData?.mobile
+  || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isInstalledPwa = () => window.matchMedia('(display-mode: standalone)').matches
+  || navigator.standalone === true
+  || installedThisSession;
+
+function updateInstallButton() {
+  installButton.hidden = !isMobileDevice() || isInstalledPwa();
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  updateInstallButton();
+});
+window.addEventListener('appinstalled', () => {
+  installedThisSession = true;
+  deferredInstallPrompt = null;
+  updateInstallButton();
+  toast('Aplicativo instalado.');
+});
+installButton.addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const result = await deferredInstallPrompt.userChoice;
+    if (result.outcome === 'accepted') installedThisSession = true;
+    deferredInstallPrompt = null;
+    updateInstallButton();
+    return;
+  }
+
+  if (isAppleMobile()) {
+    alert('No Safari, toque em Compartilhar e escolha “Adicionar à Tela de Início”.');
+  } else {
+    alert('Abra o menu do navegador e escolha “Instalar app” ou “Adicionar à tela inicial”.');
+  }
+});
+updateInstallButton();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
